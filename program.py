@@ -1,4 +1,7 @@
-import sqlite3 as  m 
+# Dharni
+
+import sqlite3 as m
+
 conn=m.connect('test2.db')
 conn2=m.connect('test3.db')
 conn3=m.connect('fooddetails.db')
@@ -7,9 +10,8 @@ cursor1=conn.cursor()
 cursor3=conn3.cursor()
 import datetime
 
-
-
 from prettytable import from_db_cursor
+
 
 def save():
     conn.commit()
@@ -20,32 +22,47 @@ def save2():
 def save3():
     conn3.commit()    
             
-def getdate(a):
-   
+def getdate():
+    y=''
+    print('_/_/_')
+    a=input('''Enter workout date number by number starting with day number\nor enter 'today' if you want to log todays workout: ''')
     if a == 'today':      
         y= datetime.datetime.now()
-        return y.strftime('%x')
-        
-    else:
-        date='_/_/_'
-        date='%s/_/_ ' %a
-        print(date)
-        b=int(input('Enter date: '))
-        date='%s/%s/_' %(a,b)
-        print(date)
-        c=int(input('Enter date: '))
-        date='%s/%s/%s' %(a,b,c)
-        print(date)
-        return date
+        return y.strftime('%d/%m/%Y')
+                        
+    else:                   
+        try:
+            y = int(a)
+        except ValueError:
+            print("Enter integers only") #\u001b[31m
+        if type(y) == int:    
+            #date='_/_/_'
+            date='%s/_/_ ' %y
+            print(date)
+            b=int(input('Enter number of month: '))
+            date='%s/%s/_' %(a,b)
+            print(date)
+            c=int(input('Enter number of year: '))
+            date='%s/%s/%s' %(y,b,c)
+            print(date)
+            return date          
+                
 
 def logging():
-    command=''
-    print('_/_/_')
-    command=input('''Enter workout date or enter 'today' if you want to log todays workout: ''')
-    seshdate = getdate(command)
-    cursor1.execute('''create table '%s' (wname, noofsets, weightsused, repsdone)''' %seshdate)
+    seshdate=''               
+        #try:
+    while True:
+        try:
+            seshdate = getdate()        
+            cursor1.execute('''create table '%s' (wname, noofsets, weightsused, repsdone)''' %seshdate)
+        except m.OperationalError:
+            print('Enter a valid input')
+            continue
+        else:
+            break
     insertingworkout(seshdate)
-
+            #except:
+                #print('Log for this name already exists. Delete or add to existing log')
 
 def insertingworkout(seshdate):
     complete=False
@@ -110,19 +127,19 @@ def collectmacros(mealname, Qty):
 
 def   insertingmeal(mealdate):
   complete=''
-  while not complete:
-      tom = input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''')
-      if tom == 'done':
+  while not complete:  
+      tom=input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''').title()        
+      if tom == 'Done':
          complete=True 
       else:
           done=''
           while not done:
-              mealname=input('''Enter mealname or 'done': ''')
-              if mealname=='done':
+              mealname=input('''Enter mealname or 'done': ''').title()              
+              if mealname=='Done':
                   done=True
               else:
                   Qty=int(input('Enter Qty:  '))
-                  Protein, Carbs, Fat, Calories= collectmacros(mealname.title(), Qty)
+                  Protein, Carbs, Fat, Calories= collectmacros(mealname, Qty)
                   cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' %(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
                   save2()    
 
@@ -132,41 +149,57 @@ print('SpotmyChad')   #program starts here
 
 
 while exit != 1:
-    print('\nEnter 1 to proceed with Gym log feature \nEnter 2 to proceed with Calorie Tracking Feature \nEnter 3 to exit ')
-    command=input()
+    command=input('\nEnter 1 to proceed with Gym log feature \nEnter 2 to proceed with Calorie Tracking Feature \nEnter 3 to exit: ')
     if command=='1':
         command=input('\nEnter 1 to log a NEW workout \nEnter 2 to VIEW previous workout logs \nEnter 3 to DELETE existing log\nEnter 4 to ADD to existing log\nEnter 5 to go BACK: '  )
                     
         if command == '1':
-                        try:
-                            logging()
-                            save()
-                        except:
-                                print('\nLog for this date already exists, delete it or add to existing table\n ')
-                                
-                       
+                        logging()
+                        save()
                         
-                 
-                        
-                                                                                                                               
+                                                                                                                                                           
         elif command=='2':
-                        showtables()                        
-                        tablename=input('Enter the Session date to view its log: ')   
-                        showtableinfo(tablename)                               
+            showtables()
+            while True:
+                tablename=input('Enter the Session date to view its log: ')
+                try:   
+                    showtableinfo(tablename)
+                    break
+                except:
+                    print('No such table exist. Make sure you typed correctly')                               
+        
+        
         elif command=='3':
-                         print('Delete a existing log')
-                         showtables()
-                         seshdate = input('Enter date of session you want to delete: ')
-                         showtableinfo(seshdate)
-                         confirmation = input('Are you sure you want to delete this log? Y/N: ')
-                         if confirmation == 'y' or 'Y':
-                               cursor1.execute('''drop table '%s' ''' %seshdate )
-                         else:
-                               continue      
+                        print('Delete a existing log')
+                        showtables()
+                        while True:
+                            try:
+                                seshdate = input('Enter date of session you want to delete: ')                        
+                                showtableinfo(seshdate)
+                                break
+                            except:
+                                print('No such table exist. Make sure you typed correctly')    
+                       
+                        while True:
+                            confirmation = input('Are you sure you want to delete this log? Y/N: ').lower()
+                            if confirmation == 'y':
+                                cursor1.execute('''drop table '%s' ''' %seshdate )
+                                print('Log deleted succesfully')
+                                break
+                            elif confirmation == 'n':
+                                print("No log deleted")                                 
+                                break
+                            else:
+                                print("Enter either y/n")      
         elif command == '4':
             showtables()
-            seshdate= input('Enter date of session you want to add to: ')
-            showtableinfo(seshdate)
+            while True:
+                try:
+                    seshdate= input('Enter date of session you want to add to: ')
+                    showtableinfo(seshdate)
+                    break
+                except:
+                    print('No such table exist. Make sure you typed correctly')    
             insertingworkout(seshdate)
             showtableinfo(seshdate)
             save()                       
@@ -200,6 +233,7 @@ while exit != 1:
             mealdate = input('Enter date of log you want to add to:  ')
             showtableinfo2(mealdate)
             insertingmeal(mealdate)
+            showtableinfo2(mealdate)
             
             
             
@@ -251,6 +285,7 @@ while exit != 1:
             confirmation= input('Are you sure you want to delete ? Y/N ')
             if confirmation == 'Y' or 'y':
                 cursor2.execute('''drop table '%s' ''' %mealdate)
+                print("Log deleted succesfully")
             else:
                   continue
                   
@@ -264,4 +299,4 @@ while exit != 1:
         exit =1
     
     else:
-        print('Invalid command \nEnter either 1 or 2')  
+        print('Invalid command \nEnter either 1 or 2')   
