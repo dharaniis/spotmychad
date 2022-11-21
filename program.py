@@ -61,8 +61,9 @@ def logging():
     insertingworkout(seshdate)
             
 
-def insertingworkout(seshdate):
+def insertingworkout(seshdate,a = 0,b = 0):
     noset=0
+    a=0
     while True:
         wname=input('''Enter workout name:  or 'done' ''')
         if wname =='done':
@@ -78,8 +79,15 @@ def insertingworkout(seshdate):
                         weightsused=[]
                         repsdone=[]
                         for i in range(noset):
-                            x=input('Enter weight used in set%s: ' %(i+1))
-                            y=input('Enter reps done in set%s: '%(i+1) )
+                            while True:
+                                try:
+                                    x=input('Enter weight used in set%s: ' %(i+1))                                   
+                                    y=input('Enter reps done in set%s: '%(i+1) )
+                                    if x.isalpha() or y.isalpha():
+                                        raise Exception
+                                    break
+                                except:
+                                    print("Enter integers only")
                             weightsused.append(x)
                             repsdone.append(y)
                         sweightsused=''
