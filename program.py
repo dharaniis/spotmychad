@@ -11,6 +11,17 @@ import datetime
 from prettytable import from_db_cursor
 
 
+def validatenum(data : str):
+    '''
+    Validates a string passed if it only contains nums.
+    '''
+    nums ='1234567890'
+    for i in data:
+        if i not in nums:
+            raise ValueError
+    return data
+
+
 def save():
     conn.commit()
     
@@ -61,9 +72,8 @@ def logging():
     insertingworkout(seshdate)
             
 
-def insertingworkout(seshdate,a = 0,b = 0):
+def insertingworkout(seshdate):
     noset=0
-    a=0
     while True:
         wname=input('''Enter workout name:  or 'done' ''')
         if wname =='done':
@@ -81,22 +91,20 @@ def insertingworkout(seshdate,a = 0,b = 0):
                         for i in range(noset):
                             while True:
                                 try:
-                                    x=input('Enter weight used in set%s: ' %(i+1))                                   
-                                    y=input('Enter reps done in set%s: '%(i+1) )
-                                    if x.isalpha() or y.isalpha():
-                                        raise Exception
+                                    x=validatenum(input('Enter weight used in set%s: ' %(i+1)))                                  
+                                    y=validatenum(input('Enter reps done in set%s: '%(i+1) ))                                                                                                          
+                                    weightsused.append(x)
+                                    repsdone.append(y)
                                     break
                                 except:
                                     print("Enter integers only")
-                            weightsused.append(x)
-                            repsdone.append(y)
+                            
                         sweightsused=''
                         srepsdone=''
                         for i in weightsused:
                             sweightsused+='%s kgs '%i
                         for i in repsdone:    
-                            srepsdone+= '%s reps ' %i                       
-                        
+                            srepsdone+= '%s reps ' %i                                              
                         cursor1.execute('''insert into '%s' values('%s', '%s', '%s', '%s')''' %(seshdate, wname, noset, sweightsused, srepsdone))    
                         break
                     except:
@@ -140,22 +148,33 @@ def collectmacros(mealname, Qty):
          return round(r, 1),round(x,1),round(y,1), z                                                                          
 
 def   insertingmeal(mealdate):
-  complete=''
-  while not complete:  
-      tom=input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''').title()        
-      if tom == 'Done':
-         complete=True 
-      else:
-          done=''
-          while not done:
-              mealname=input('''Enter mealname or 'done': ''').title()              
-              if mealname=='Done':
-                  done=True
-              else:
-                  Qty=int(input('Enter Qty:  '))
-                  Protein, Carbs, Fat, Calories= collectmacros(mealname, Qty)
-                  cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' %(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
-                  save2()    
+    Qty=''
+    tomd=['Breakfast','Dinner','Lunch','Snacks']     
+    while True:
+        tom=input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''').title()
+        if tom == 'Done':
+            break 
+        else:
+            if tom in tomd:
+                break
+            else:
+                print('Enter time of meal from the above options')
+        done=''
+        while not done:
+            mealname=input('''Enter mealname or 'done': ''').title()              
+            if mealname=='Done':
+                done=True
+            else:
+                while True:
+                    try:
+                        Qty=int(input('Enter Qty:  '))
+                        Protein, Carbs, Fat, Calories= collectmacros(mealname, Qty)
+                        cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' %(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
+                        save2() 
+                        break
+                    except:
+                        print('Enter integers only')
+                       
 
 
 
@@ -247,12 +266,9 @@ while exit != 1:
             print('\nNew Log\n')
             while True:
                 try:
-                    if mealdate=='done':
-                        break
-                    else:
-                        mealdate= getdate()
-                        cursor2.execute('''create table '%s' (Fname varchar(10), Qty integer, Tom, Protein float, Carbs float, Fat float, Calories integer)''' %mealdate)
-                        break
+                    mealdate=getdate()                      
+                    cursor2.execute('''create table '%s' (Fname varchar(10), Qty integer, Tom, Protein float, Carbs float, Fat float, Calories integer)''' %mealdate)
+                    break
                 except:
                     print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
 
