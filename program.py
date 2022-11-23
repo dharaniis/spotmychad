@@ -1,7 +1,8 @@
 import sqlite3 as m
 
-conn=m.connect('test2.db')
-conn2=m.connect('test3.db')
+
+conn=m.connect('gymlog.db')
+conn2=m.connect('foodlog.db')
 conn3=m.connect('fooddetails.db')
 cursor2=conn2.cursor()
 cursor1=conn.cursor()
@@ -38,6 +39,8 @@ def getdate():
     if a == 'today':      
         y= datetime.datetime.now()
         return y.strftime('%d/%m/%Y')                   
+    elif a =='done':
+        return a
     else:                   
         try:
             y = int(a)
@@ -57,26 +60,13 @@ def getdate():
             return date          
                 
 
-def logging():
-    seshdate=''               
-        #try:
-    while True:
-        try:
-            seshdate = getdate()        
-            cursor1.execute('''create table '%s' (wname, noofsets, weightsused, repsdone)''' %seshdate)
-        except m.OperationalError:
-            print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
-            continue
-        else:
-            break
-    insertingworkout(seshdate)
             
 
 def insertingworkout(seshdate):
     noset=0
     while True:
-        wname=input('''Enter workout name:  or 'done' ''')
-        if wname =='done':
+        wname=input('''Enter workout name:  or 'done' ''').title()
+        if wname =='Done':
              break
         else:
             while True:
@@ -148,32 +138,27 @@ def collectmacros(mealname, Qty):
          return round(r, 1),round(x,1),round(y,1), z                                                                          
 
 def   insertingmeal(mealdate):
-    Qty=''
-    tomd=['Breakfast','Dinner','Lunch','Snacks']     
-    while True:
-        tom=input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''').title()
+    complete=''
+    while not complete:  
+        tom=input('''Enter time of meal, Breakfast, Lunch, Snacks, Dinner or 'done': ''').title()        
         if tom == 'Done':
             break 
         else:
-            if tom in tomd:
-                break
-            else:
-                print('Enter time of meal from the above options')
-        done=''
-        while not done:
-            mealname=input('''Enter mealname or 'done': ''').title()              
-            if mealname=='Done':
-                done=True
-            else:
-                while True:
-                    try:
+            done=''
+            while not done:
+                mealname=input('''Enter mealname or 'done': ''').title()              
+                if mealname=='Done':
+                    done=True
+                else:
+                    try:                        
                         Qty=int(input('Enter Qty:  '))
                         Protein, Carbs, Fat, Calories= collectmacros(mealname, Qty)
                         cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' %(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
-                        save2() 
-                        break
-                    except:
-                        print('Enter integers only')
+                        save2()
+                    except: 
+                        print("Food item may not be in database or make sure you made a valid input")   
+                    
+                
                        
 
 
@@ -187,8 +172,22 @@ while exit != 1:
         command=input('\nEnter 1 to log a NEW workout \nEnter 2 to VIEW previous workout logs \nEnter 3 to DELETE existing log\nEnter 4 to ADD to existing log\nEnter 5 to go BACK: '  )
                     
         if command == '1':
-                        logging()
-                        save()
+            seshdate=''               
+            while True:
+                try:
+                    seshdate = getdate()
+                    if seshdate =='done':
+                        break        
+                    cursor1.execute('''create table '%s' (wname, noofsets, weightsused, repsdone)''' %seshdate)
+                    insertingworkout(seshdate)
+                    showtableinfo(seshdate)
+                    save()
+                except m.OperationalError:
+                    print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
+                    continue
+                else:
+                    break
+            
                         
                                                                                                                                                            
         elif command=='2':
@@ -266,14 +265,17 @@ while exit != 1:
             print('\nNew Log\n')
             while True:
                 try:
-                    mealdate=getdate()                      
+                    mealdate=getdate()
+                    if mealdate=='done':
+                        break                      
                     cursor2.execute('''create table '%s' (Fname varchar(10), Qty integer, Tom, Protein float, Carbs float, Fat float, Calories integer)''' %mealdate)
+                    insertingmeal(mealdate)
+                    showtableinfo2(mealdate)
                     break
                 except:
                     print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
 
-            insertingmeal(mealdate)
-            showtableinfo2(mealdate)
+            
                                                       
                     
             
@@ -309,44 +311,45 @@ while exit != 1:
                 else:
                     try:   
                         showtableinfo2(mealdate)
+                        totalcal=0
+                        cursor2.execute('''select Calories from '%s' ;''' %mealdate) 
+                        x = cursor2.fetchall()
+                        for i in x:
+                            totalcal += int(i[0])
+                        
+
+                        totalprotein=0
+                        cursor2.execute('''select Protein from '%s' ''' %mealdate)
+                        x = cursor2.fetchall()
+                        for i in x:
+                            totalprotein += int(i[0])
+
+                        totalcarbs=0
+                        cursor2.execute('''select Carbs from '%s' ''' %mealdate)
+                        x = cursor2.fetchall()
+                        for i in x:
+                            totalcarbs += int(i[0])
+
+
+                        totalfat=0
+                        cursor2.execute('''select Fat from '%s' ''' %mealdate)
+                        x = cursor2.fetchall()
+                        for i in x:
+                            totalfat += int(i[0])
+                        
+                        print('Total calories: ', totalcal)
+                        print('Total Protein: ', totalprotein)
+                        print('Total Carbs: ', totalcarbs)  
+                        
+                                                                                                                                                                                                                                                                                            
+                        proteincal = 4*totalprotein
+                        carbscal = 4*totalcarbs
+                        fatcal = 9*totalfat
+                        others= totalcal - (proteincal+carbscal+fatcal) 
                         break
                     except:
                         print('No such table exist. Make sure you typed correctly')
-            totalcal=0
-            cursor2.execute('''select Calories from '%s' ;''' %mealdate) 
-            x = cursor2.fetchall()
-            for i in x:
-                totalcal += int(i[0])
-               
-
-            totalprotein=0
-            cursor2.execute('''select Protein from '%s' ''' %mealdate)
-            x = cursor2.fetchall()
-            for i in x:
-                totalprotein += int(i[0])
-
-            totalcarbs=0
-            cursor2.execute('''select Carbs from '%s' ''' %mealdate)
-            x = cursor2.fetchall()
-            for i in x:
-                totalcarbs += int(i[0])
-
-
-            totalfat=0
-            cursor2.execute('''select Fat from '%s' ''' %mealdate)
-            x = cursor2.fetchall()
-            for i in x:
-                totalfat += int(i[0])
-            
-            print('Total calories: ', totalcal)
-            print('Total Protein: ', totalprotein)
-            print('Total Carbs: ', totalcarbs)  
-               
-                                                                                                                                                                                                                                                                                
-            proteincal = 4*totalprotein
-            carbscal = 4*totalcarbs
-            fatcal = 9*totalfat
-            others= totalcal - (proteincal+carbscal+fatcal)     
+                
                                                                                                                                                                                                                                                                                                                             
         elif command =='4':
             showtables2()
