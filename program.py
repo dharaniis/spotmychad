@@ -35,8 +35,8 @@ def save3():
 def getdate():
     y=''
     print('_/_/_')
-    a=input('''Enter workout date number by number starting with day number\nor enter 'today' if you want to log\
-todays workout: ''')
+    a=input('''Enter workout date number by number starting with day number\nor enter 'today' \
+if you want to log todays workout: ''')
     if a == 'today':      
         y= datetime.datetime.now()
         return y.strftime('%d/%m/%Y')                   
@@ -96,8 +96,8 @@ def insertingworkout(seshdate):
                             sweightsused+='%s kgs '%i
                         for i in repsdone:    
                             srepsdone+= '%s reps ' %i                                              
-                        cursor1.execute('''insert into '%s' values('%s', '%s', '%s', '%s')''' %(seshdate, wname,\
-noset, sweightsused, srepsdone))    
+                        cursor1.execute('''insert into '%s' values('%s', '%s', '%s', '%s')''' %(seshdate, \
+wname,noset, sweightsused, srepsdone))    
                         break
                     except:
                         print('Enter integers only')
