@@ -35,7 +35,8 @@ def save3():
 def getdate():
     y=''
     print('_/_/_')
-    a=input('''Enter workout date number by number starting with day number\nor enter 'today' if you want to log todays workout: ''')
+    a=input('''Enter workout date number by number starting with day number\nor enter 'today' if you want to log\
+todays workout: ''')
     if a == 'today':      
         y= datetime.datetime.now()
         return y.strftime('%d/%m/%Y')                   
@@ -95,7 +96,8 @@ def insertingworkout(seshdate):
                             sweightsused+='%s kgs '%i
                         for i in repsdone:    
                             srepsdone+= '%s reps ' %i                                              
-                        cursor1.execute('''insert into '%s' values('%s', '%s', '%s', '%s')''' %(seshdate, wname, noset, sweightsused, srepsdone))    
+                        cursor1.execute('''insert into '%s' values('%s', '%s', '%s', '%s')''' %(seshdate, wname,\
+noset, sweightsused, srepsdone))    
                         break
                     except:
                         print('Enter integers only')
@@ -153,7 +155,8 @@ def   insertingmeal(mealdate):
                     try:                        
                         Qty=int(input('Enter Qty:  '))
                         Protein, Carbs, Fat, Calories= collectmacros(mealname, Qty)
-                        cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' %(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
+                        cursor2.execute('''insert into '%s' values('%s','%s','%s','%s','%s','%s','%s')''' \
+%(mealdate, mealname, Qty, tom, Protein, Carbs, Fat, Calories))
                         save2()
                     except: 
                         print("Food item may not be in database or make sure you made a valid input")   
@@ -167,9 +170,12 @@ print('SpotmyChad')   #program starts here
 
 
 while exit != 1:
-    command=input('\nEnter 1 to proceed with Gym log feature \nEnter 2 to proceed with Calorie Tracking Feature \nEnter 3 to exit: ')
+    command=input('\nEnter 1 to proceed with Gym log feature \nEnter 2 to proceed with Calorie Tracking \
+Feature
+\nEnter 3 to exit: ')
     if command=='1':
-        command=input('\nEnter 1 to log a NEW workout \nEnter 2 to VIEW previous workout logs \nEnter 3 to DELETE existing log\nEnter 4 to ADD to existing log\nEnter 5 to go BACK: '  )
+        command=input('\nEnter 1 to log a NEW workout \nEnter 2 to VIEW previous workout logs \nEnter 3 to \
+DELETE existing log\nEnter 4 to ADD to existing log\nEnter 5 to go BACK: '  )
                     
         if command == '1':
             seshdate=''               
@@ -183,7 +189,8 @@ while exit != 1:
                     showtableinfo(seshdate)
                     save()
                 except m.OperationalError:
-                    print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
+                    print('\nCheck if a log for this date already exists\nor make sure you made a \
+valid input\n')
                     continue
                 else:
                     break
@@ -260,7 +267,8 @@ while exit != 1:
     
     
     elif command=='2':
-        command=input('\nEnter 1 to proceed with NEW Log \nEnter 2 to ADD to existng log \nEnter 3 to VIEW summary\nEnter 4 to DELETE existing log\nEnter 5 to go BACK: ')
+        command=input('\nEnter 1 to proceed with NEW Log \nEnter 2 to ADD to existng log \nEnter 3 to VIEW \
+summary\nEnter 4 to DELETE existing log\nEnter 5 to go BACK: ')
         if command =='1':
             print('\nNew Log\n')
             while True:
@@ -268,12 +276,14 @@ while exit != 1:
                     mealdate=getdate()
                     if mealdate=='done':
                         break                      
-                    cursor2.execute('''create table '%s' (Fname varchar(10), Qty integer, Tom, Protein float, Carbs float, Fat float, Calories integer)''' %mealdate)
+                    cursor2.execute('''create table '%s' (Fname varchar(10), Qty integer, Tom, Protein float\
+, Carbs float, Fat float, Calories integer)''' %mealdate)
                     insertingmeal(mealdate)
                     showtableinfo2(mealdate)
                     break
                 except:
-                    print('\nCheck if a log for this date already exists\nor make sure you made a valid input\n')
+                    print('\nCheck if a log for this date already exists\nor make sure you made a \
+valid input\n')
 
             
                                                       
